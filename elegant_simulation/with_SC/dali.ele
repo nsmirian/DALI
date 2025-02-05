@@ -1,0 +1,86 @@
+
+
+ &run_setup
+	lattice =DALI_lattice.lte
+  use_beamline = Gun_to_MIR
+	p_central_mev = 5.5933376
+	default_order = 1
+	sigma = %s.sig
+	final = %s.final
+	random_number_seed = 987654321
+	magnets = %s.mag
+	output = %s.out
+	parameters = %s.param,
+	tracking_updates = 1
+      element_divisions = 1
+      centroid = 1
+      expand_for = "particle1M_file.sdds.csv" 
+      !space_charge = 1
+
+&end
+
+!&alter_elements name=D*, item=BINS, value=100 &end
+!&transmute_elements name=D*, type=CSRDRIFT, new_type=LSCDSRIFT &end
+
+
+!&insert_elements
+    name = "SC",                ! Name of the inserted element
+    type = "SCMULT",             ! Element type for space charge kicks
+    l = 0.1,                    ! Length of each space charge section (meters)
+    interval = 0.1              ! Distance between inserted elements (meters)
+!&end
+
+&run_control
+	reset_rf_for_each_step = 1          !change this to 0 for jitter study
+	first_is_fiducial = 0               !change this to 1 for jitter study
+	restrict_fiducialization = 1
+    n_steps = 1                         !valid only if "n_indices = 0"
+	n_indices = 0                       !equal 1 only if there are some "vary_element" options
+	bunch_frequency = 0
+&end
+
+!&matrix_output
+	!full_matrix_only = 1
+	SDDS_output_order = 3
+	output_at_each_step = 1
+	SDDS_output = %s.mat
+!&end
+
+
+
+
+&twiss_output
+	filename = %s.twi
+	matched =0
+      beta_x = 14.536983646893802, 
+      alpha_x = 5.668202451983896, 
+      beta_y = 14.193144329608034, 
+      alpha_y = 5.532646004350875
+			  
+&end
+
+!&floor_coordinates
+    filename = %s.flr,
+!&end
+
+
+
+
+&sdds_beam   
+
+	input = "particle1M_file.sdds.csv"
+	sample_fraction = 1
+	one_random_bunch = 1
+    reuse_bunch = 1
+	center_transversely = 0
+	center_arrival_time = 0
+	save_initial_coordinates = 1
+&end
+
+
+
+
+&track  &end
+
+
+
