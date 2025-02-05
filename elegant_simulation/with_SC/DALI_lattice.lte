@@ -1,0 +1,274 @@
+!------------------------------------------------------------------------------
+!------------------------------------------------------------------------------
+!' DAIL lattice  '
+! Najmeh Mirian , HZDR, 28- 01- 2025
+!
+!------------------------------------------------------------------------------
+!         LINAC1 and 2 sections for  T0 Linac1 Diagnost_line  linac2 T1
+!			Positron  transmission line
+! 			MIR FEL  transmission line
+!			FIR FEL transmission line
+!------------------------------------------------------------------------------
+
+!Gun to Acc
+
+w_inj: watch,filename="%s.inj",mode="coord"
+w_linac: watch,filename="%s.linac",mode="coord"
+w_PS: watch,filename="%s.PS",mode="coord"
+w_MIR: watch,filename="%s.MIR",mode="coord"
+
+Q : CHARGE,TOTAl=1e-9
+% 1  sto LSC_flag
+% 1  sto LSCL_flag
+% 2000  sto LSC_BIN
+% 0.25 sto HFC0
+% 0.65 sto HFC1
+% 0.01 sto LFC0
+% 0.55 sto LFC1
+START1I : Mark
+M1 : Mark
+
+! INSTR &
+! MONIORs !
+BPM1I :  MONI !!:'BPM.1.I')
+BPM2I :  MONI !!:'BPM.2.I')
+SCRN1I : MONI !!:'SCRN.1.I')
+SCRN2I : MONI !!:'SCRN.2.I')
+FCUP1I : MONI !!:'FCUP.1.I')
+DCM1I :  MONI !!:'DCM.1.I')
+TORB1I : MONI !!:'TORB.1.I')
+
+
+! SOLENOID
+SOLA1I : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", L=0.1 !SOLE, L = 0.1!, k1=0.0 	!(l = 0.1, k : 0.0, eid : 'SOLA.1.I')  
+SOLB1I : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", L=0.1!SOLE, L = 0.1!, k1=0.0 	!Solenoid(l = 0.1, k : 0.0, eid : 'SOLB.1.I')  
+
+
+! soft Kicker
+CKXY1I : KICK, l = 0.05!, HKICK=0.0
+CKXY2I : KICK, l = 0.05!, HKICK=0.0
+CKXY3I : KICK, l = 0.05!, HKICK=0.0
+
+Q1I:Quad, l = 0.10, k1 = 0, tilt = 0.00
+Q2I:Quad, l = 0.10, k1 = 0, tilt = 0.00
+Q3I:Quad, l = 0.10, k1 = 0, tilt = 0.00
+
+KDC1I : VKICK, l = 0.100!, HKICK=0.0
+
+! COLLIMATOR
+DCCOL.1.I :   ECOL, L= 0.00, X_MAX = 0.0200, Y_MAX = 0.0200
+
+
+D020 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l = 0.20
+D025 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l = 0.25
+D015 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l = 0.15
+D010 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l = 0.10
+!------------------ from gun to Linac ---------------------
+T0: LINE = (Q, START1I,w_inj,  SOLA1I, D020, SOLB1I, D025, CKXY1I, &
+    KDC1I, D020, BPM1I, SCRN1I, FCUP1I, D025, Q1I, D025, Q2I, D025, Q3I, D025, &
+    D025, CKXY2I,D015, BPM2I, SCRN2I, D015,  D020, DCM1I, &
+    D015, TORB1I, D015, CKXY3I, D020 )
+
+!-----------------------------------
+! Linac section
+!-----------------------------------
+! RF cavity setting
+! 1.0 nC
+% 91 sto phase_A1
+% 12e6  sto volt_A1
+! RFCW CELL LENGTH
+% 0.01 sto C_L
+
+
+enter_Linac1 : Mark!:'enter_Linac1')
+exit_Linac1 : Mark!:'exit_Linac1')
+exit_Linac2 : Mark!:'exit_Linac2')
+
+D042 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.42  ! entrance 
+
+! Cavities : 
+
+!LA1RC1 : Cavity(l=1.038, v=0.012, freq=1.3e9, phi:0.0, eid:'LA1RC10')
+LA1RC1 :   RFCW, LSC="LSCL_flag", LSC_BINS="LSC_BIN", L = 1.038, PHASE = "phase_A1", VOLT = "volt_A1", FREQ = 1.3e+9, &
+          CHANGE_P0 = 1, END1_FOCUS = 1, END2_FOCUS = 1, STANDING_WAVE=1,BODY_FOCUS_MODEL=SRS,  CELL_LENGTH="C_L", N_KICKS=50
+LA1D0346 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l=0.346
+!LA1RC2 : Cavity(l=1.038, v=0.012, freq=1.3e9, phi:0.0, eid:'LA1RC20')
+LA1RC2 :   RFCW, LSC="LSCL_flag", LSC_BINS="LSC_BIN", L = 1.038, PHASE = "phase_A1", VOLT = "volt_A1", FREQ = 1.3e+9, &
+          CHANGE_P0 = 1, END1_FOCUS = 1, END2_FOCUS = 1, STANDING_WAVE=1,BODY_FOCUS_MODEL=SRS,  CELL_LENGTH="C_L", N_KICKS=50
+!LA2RC1 : Cavity(l=1.038, v=0.012, freq=1.3e9, phi:0.0, eid:'LA2RC10')
+LA2RC1 :   RFCW, LSC="LSCL_flag", LSC_BINS="LSC_BIN", L = 1.038, PHASE = "phase_A1", VOLT = "volt_A1", FREQ = 1.3e+9, &
+          CHANGE_P0 = 1, END1_FOCUS = 1, END2_FOCUS = 1, STANDING_WAVE=1,BODY_FOCUS_MODEL=SRS,  CELL_LENGTH="C_L", N_KICKS=50
+LA2D0346 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.346
+!LA2RC2 : Cavity(l=1.038, v=0.012, freq=1.3e9, phi:0.0, eid:'LA2RC20')
+LA2RC2 :   RFCW, LSC="LSCL_flag", LSC_BINS="LSC_BIN", L = 1.038, PHASE = "phase_A1", VOLT = "volt_A1", FREQ = 1.3e+9, &
+          CHANGE_P0 = 1, END1_FOCUS = 1, END2_FOCUS = 1, STANDING_WAVE=1,BODY_FOCUS_MODEL=SRS,  CELL_LENGTH="C_L", N_KICKS=50
+!!! LINAC correctors
+
+CX1Lin:HKICK, l = 0.050!, angle=0.0	!, eid : 'CX.1.Lin')
+CY1Lin:VKICK, l = 0.050!, angle=0.0	!, eid : 'CY.1.Lin')
+!! MONI !
+BPM1Lin :  MONI !!:'BPM.1.Lin')
+
+! Lines ----------------------------------------------
+
+Diagnost_line:Line=(D025,CX1Lin, D025, CY1Lin, D025, BPM1Lin, D020 )
+LINAC:Line=(enter_Linac1, LA1RC1, LA1D0346, LA1RC2, exit_Linac1,D042, Diagnost_line ,&
+	 D042, LA2RC1, LA2D0346,LA2RC2 , D042,exit_Linac2)
+
+!---------------------------------------------------
+
+!--------------------------------------------------
+! Kicker and Diagnostic section T1 transfer section
+!--------------------------------------------------
+Q1l:QUAD, l = 0.20, k1 = -2.59876543209874 , tilt = 0.00!, -2.9876543209874
+Q2l:QUAD, l = 0.20, k1 = 2.4783950617284, tilt =0.00!, 3.04783950617284
+
+CX1l:HKICK, l = 0.050 !angle=0.0	!, eid : 'CX.1.L'
+CY1l:VKICK, l = 0.050 !angle=0.0	!, eid : 'CY.1.L'
+
+
+BPM3l: MONI !!:'BPM.3.L')
+BPM4l: MONI !!:'BPM.4.L')
+
+LN1_FITT1: Mark!:'LN1_FITT1')
+
+D034:  LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.34
+D080:  LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.8
+D050:  LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.5
+
+KFBX1T1 :   HKICK, l = 0.90,   ! RF kicker 
+D06 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l=0.600
+D012: LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l = 0.12
+D035: LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l = 0.35
+
+!T1: Transport_section:  
+T1_start: Mark
+T1_end	: Mark
+
+D150:	LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l=1.500 
+
+! Lines
+T1: LINE= (T1_start, D020,  Q1L,D034,  Q2L, D025,KFBX1T1,D020, CX1L, &
+	D015, CY1L, D050,BPM3L, D015,  BPM4L, D015,LN1_FITT1,D010,T1_end,  w_linac)
+        
+! lInac section befor septum 
+T02T1:LINE=(T0,LINAC, T1)
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!
+! Positron Source 
+!!!!!!!!!!!!!!!!!!!!!!!
+PS_station: Mark
+
+D200 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=2.00
+D120 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=1.20
+D045 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.45
+
+Q1TPS: QUAD,l=0.15, k1=5.977873987227499
+Q2TPS : QUAD,l=0.15, k1=6.0263520817110265
+Q3TPS : QUAD,l=0.1, k1=0
+! defining of the bending magnet
+!Septom magnet 
+BSTPS:SBend,l=0.1, angle=-0.2617993877991494, e1=-0.131, e2=-0.131, tilt=0.0
+BTPS:SBend,l=0.236, angle=-0.78539, e1=-0.1963495, e2=-0.1963495, tilt=0.0
+
+Tranport_to_PS :Line=(D020,BsTPS, D200, BTPS,D025, Q1TPS, D045,Q2TPS, D045,&
+                BTPS, D025, Q3TPS, D120 ,PS_station, , w_PS)
+Gun2PS :Line=(T02T1, Tranport_to_PS)
+
+
+
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
+!########################
+!########################
+!# MIR FEL Source   		Design of Transfer to MIR source 
+!########################
+
+D055 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.55
+D0325: LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.325
+D100 : LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=1.
+D250 :LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=2.5
+D040:	LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.40
+D030:	LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=0.30
+
+!# defining of the quads
+Q0TMIR: QUAD,l=0.15, k1=5
+Q1TMIR: QUAD,l=0.18, k1=7.591419818385525
+Q2TMIR : QUAD,l=0.15, k1=0.6492804179761399
+Q3TMIR: QUAD,l=0.15, k1=5
+Q4TMIR: QUAD,l=0.15, k1=0
+!# defining of the bending magnet
+!#Septom magnet 
+BSTMIR:SBend,l=0.1,  angle=0.2617993877991494, e1=0.131, e2=0.131, tilt=0.0
+BTMIR:SBend,l=0.22, angle=0.6, e1=0.3, e2=0.3, tilt=0.0
+
+Tranport_to_MIR: line=(D020,BSTMIR, D250, Q0TMIR,D025, BTMIR, D020, Q1TMIR, D055,Q2TMIR, &
+	D0325, BTMIR,M1, D015, Q3TMIR, D025, Q4TMIR, D025, M1)
+
+Q5TMIR: QUAD,l=0.2, k1=8
+Q6TMIR: QUAD,l=0.2, k1=8.791237417530642
+Q7TMIR : QUAD,l=0.2, k1=8.791237417530642
+Q8TMIR: QUAD,l=0.1, k1=2
+Q9TMIR: QUAD,l=0.1, k1=0
+!angle=0.6+0.2617993877991494/2=0.7308996938995747
+
+BTMIR2 :SBend,l=0.22, angle=-0.731, e1=-0.3655 , e2=-0.3655, tilt=0.0
+!BTMIR3=SBend(l=0.1, angle=-septum_angle, e1=-septum_angle/2, e2=-septum_angle/2, tilt=0.0, fint=0.0, eid='MIR_bend')
+Tranport_to_MIR2: LINE=(Q5TMIR,D030, BTMIR2, D040, Q6TMIR, D020,Q7TMIR, D040,BTMIR2, M1, D030,Q8TMIR ,D015,M1, w_MIR)
+
+Gun_to_MIR: LINE=(T02T1,Tranport_to_MIR,Tranport_to_MIR2)
+
+
+!!!!
+
+! UNTIL here 
+
+!----------------------------------------------------------------------
+!-----------------------------------
+!-----------------------------------
+! # FIR sources 
+! Far infrared radition 
+! Design of Transfer line to Far infrared radiation  (TIR)
+! We have to branched , ther are similar north and sauth branch 
+!---------------------------------------
+
+
+!D100: LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1",l=1.0
+
+
+QTIR1 : Quad, l=0.2, k1=-1.5
+QTIR2 : Quad, l=0.20, k1=2
+QTIR3 : Quad, l=0.2, k1=-1.3
+
+!ChirRC1:  Cavity(l=0.3, v=0.012, freq=3.9e9, phi=20.0, eid='chirper')
+
+ChirRC1: RFCW, L = 0.3, PHASE = 20, VOLT = 0.0e12, FREQ = 3.9e+9, &
+          CHANGE_P0 = 1, END1_FOCUS = 1, END2_FOCUS = 1,  CELL_LENGTH="C_L"
+
+cellTIR : Line=(D100, QTIR1, D020, ChirRC1, D020, QTIR2, D020, QTIR3, D020)
+
+! first line 
+BTIR: SBend, l=0.2, angle=0.2, e1=0.1, e2=0.1, tilt=0.0
+QTIR4 : Quad,l=0.2, k1=9.65
+QTIR5 : Quad,l=0.2, k1=-8
+QTIR6 : Quad,l=0.2, k1=6
+!D010: LSCDRIFT, BINS="LSC_BIN", LSC="LSC_flag", HIGH_FREQUENCY_CUTOFF0="HFC0",HIGH_FREQUENCY_CUTOFF1="HFC1", LOW_FREQUENCY_CUTOFF0="LFC0", LOW_FREQUENCY_CUTOFF1="LFC1", l=0.1
+CELLTSIR: line=(D020, BTIR, D035, QTIR4,D010, QTIR4, D035,BTIR, D010,QTIR5, D035)
+
+TIR_cell: line=(T02T1,cellTIR, CELLTSIR )
+
+! second line 
+!//////////////////////////////////////
+BTIR2: SBend, l=0.2, angle=-0.2, e1=-0.1, e2=-0.1, tilt=0.0
+QTIR2_1: Quad, l=0.2, k1=9.65
+QTIR2_2: Quad, l=0.2, k1=8
+QTIR2_3: Quad, l=0.2, k1=7
+
+
+CELLTSIR2: Line=(D020, BTIR2, D035, QTIR2_1,D010, QTIR2_1, D035,BTIR2, D010,QTIR2_2, D035, QTIR2_3, D010,D100)
+
+TIR_cell2: Line=(T02T1,cellTIR, CELLTSIR2 )
+
